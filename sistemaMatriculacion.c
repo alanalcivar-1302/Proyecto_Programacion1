@@ -83,18 +83,18 @@ int main(){
 				
 			case 3:
 				
-				printf("-----Consulta valor a pagar-----\n");
+				int nuevoPagomatricula = 1;
 				
-				while (nuevo_Pagomatricula) {
-					int pagoAtiempo, hizo_revisionVehiculo, diasPago, tipoVehiculo;
-					float multasVehiculo, total_pagoMatricula ;
+				while (nuevoPagomatricula) {
+					int pagoAtiempo, hizoevisionVehiculo, diasPago, tipoVehiculo ;
+					float multasVehiculo, totalpagoMatricula ;
 					
 					printf("Seleccione su tipo de vehículo: \n");
 					printf(" 1. Automóvil \n 2. Motocicleta \n 3. Camión \n 4. Bus \n");
 					scanf("%d", &tipoVehiculo);
 					
 					printf("¿Realizó la revisión técnica? (1=Sí, 0=No): \n");
-					scanf("%d", &hizo_revisionVehiculo);
+					scanf("%d", &hizoevisionVehiculo);
 					
 					printf("¿Pagó la matrícula a tiempo? (1=Sí, 0=No): \n");
 					scanf("%d", &pagoAtiempo);
@@ -106,21 +106,23 @@ int main(){
 					scanf("%f", &multasVehiculo);
 					
 					//Total a pagar de la matrícula
-					total_pagoMatricula = calcularValormatricula(pagoAtiempo, hizo_revisionVehiculo, diasPago, multasVehiculo, tipoVehiculo);
+					totalpagoMatricula = calcularValormatricula(pagoAtiempo, hizoevisionVehiculo, diasPago, multasVehiculo, tipoVehiculo) ;
 					
-					if (total_pagoMatricula >= 0) {
+					if (totalpagoMatricula >= 0) {
 						printf("\n--------------- COMPROBANTE DE MATRICULA ---------------\n");
 						printf("Recuerde guardar el comprobante. \n");
 						printf("Multas: $%.2f\n", multasVehiculo);
-						printf("Total a pagar: $%.2f\n", total_pagoMatricula);
+						printf("Total a pagar: $%.2f\n", totalpagoMatricula);
 						printf("----------------------------------------------------------\n");
 					}
 					
 					// Desea revisar nuevo pago?
 					
 					printf("\n¿Desea procesar otro pago de matrícula? (1 = Sí, 0 = No): \n");
-					scanf("%d", &nuevo_Pagomatricula);
+					scanf("%d", &nuevoPagomatricula);
 				}
+				
+				printf("Gracias por preferir nuestro sistema. Regrese mas tarde.\n");
 				opcion = continuar();
 				break;
 			case 4:
