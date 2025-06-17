@@ -81,12 +81,12 @@ int main(){
 				
 				
 				
-			case 3:
-				
-				int nuevoPagomatricula = 1;
+			case 3:{
+			
+		   		int nuevoPagomatricula = 1;
 				
 				while (nuevoPagomatricula) {
-					int pagoAtiempo, hizoevisionVehiculo, diasPago, tipoVehiculo ;
+					int pagoAtiempo, hizoRevisionVehiculo, diasPago, tipoVehiculo ;
 					float multasVehiculo, totalpagoMatricula ;
 					
 					printf("Seleccione su tipo de vehículo: \n");
@@ -94,7 +94,7 @@ int main(){
 					scanf("%d", &tipoVehiculo);
 					
 					printf("¿Realizó la revisión técnica? (1=Sí, 0=No): \n");
-					scanf("%d", &hizoevisionVehiculo);
+					scanf("%d", &hizoRevisionVehiculo);
 					
 					printf("¿Pagó la matrícula a tiempo? (1=Sí, 0=No): \n");
 					scanf("%d", &pagoAtiempo);
@@ -105,8 +105,9 @@ int main(){
 					printf("Valor total de multas (sin descuentos): $\n");
 					scanf("%f", &multasVehiculo);
 					
-					//Total a pagar de la matrícula
-					totalpagoMatricula = calcularValormatricula(pagoAtiempo, hizoevisionVehiculo, diasPago, multasVehiculo, tipoVehiculo) ;
+				//Total a pagar de la matrícula
+				
+					totalpagoMatricula = calcularValormatricula(pagoAtiempo, hizoRevisionVehiculo, diasPago, multasVehiculo, tipoVehiculo) ;
 					
 					if (totalpagoMatricula >= 0) {
 						printf("\n--------------- COMPROBANTE DE MATRICULA ---------------\n");
@@ -118,13 +119,14 @@ int main(){
 					
 					// Desea revisar nuevo pago?
 					
-					printf("\n¿Desea procesar otro pago de matrícula? (1 = Sí, 0 = No): \n");
-					scanf("%d", &nuevoPagomatricula);
+						printf("\n¿Desea procesar otro pago de matrícula? (1 = Sí, 0 = No): \n");
+						scanf("%d", &nuevoPagomatricula);
 				}
 				
-				printf("Gracias por preferir nuestro sistema. Regrese mas tarde.\n");
-				opcion = continuar();
+					printf("Gracias por preferir nuestro sistema. Regrese mas tarde.\n");
+					opcion = continuar();
 				break;
+			}
 			case 4:
 				printf("-----Agendamiento de citas -----\n");
 				opcion = continuar();
