@@ -6,7 +6,7 @@
 #include <string.h>
 #include <ctype.h>
 
-//TamaÒo de car·cteres en arreglos
+//Tama√±o de car√°cteres en arreglos
 #define TAM_CEDULA 15
 #define TAM_NOMBRE 100
 #define TAM_PLACA 10
@@ -38,5 +38,5 @@ void pedirNombre(char nombre[]);
 
 void pedirPlaca(char placa[]);
 
-float calcularValormatricula(int pagoAtiempo, int hizoRevision, int diasPago, float multasVehiculo, int valorVehiculo);
+float calcularValormatricula(int pagoAtiempo, int hizoRevisionVehiculo, int diasPago, float multasVehiculo, int tipoVehiculo);
 #endif
