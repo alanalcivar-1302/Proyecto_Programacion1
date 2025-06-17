@@ -1,0 +1,508 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <time.h>
+#include <iostream>
+
+
+// Tamaño de caracteres en arreglos
+#define TAM_CEDULA 15
+#define TAM_NOMBRE 100
+#define TAM_PLACA 10
+#define ARCHIVO_DATOS "datosVehiculos.txt"
+
+// Definición de funciones
+int continuar(){
+	int opcion;
+	printf("¿Necesita consultar algo más? (1. Si / 2. No) \n");
+	scanf("%d", &opcion);
+	if (opcion == 2){
+		printf("Gracias por preferir nuestro sistema. Regrese mas tarde.\n");
+		return 5;
+	}
+	else
+		return 0;
+}
+	
+void menu() {
+	printf("1. Registrar vehículo \n");
+	printf("2. Buscar vehículo por placa \n");
+	printf("3. Consultar valor a pagar por matrícula\n");
+	printf("4. Agendar cita de revisión\n");
+	printf("5. Salir \n");
+	printf("\n");
+}
+
+// Función para limpiar buffer de entrada y evitar problemas al mezclar scanf y fgets
+void clearInputBuffer() {
+	int c;
+	while ((c = getchar()) != '\n' && c != EOF);
+}
+
+// Estructura que representa los datos del vehículo y propietario
+struct datos {
+	char nombrePropietario[TAM_NOMBRE];  // Nombre completo del propietario
+	char numCedula[TAM_CEDULA];          // Número de cédula
+	char modeloAuto[10];                 // Modelo del vehículo
+	char placa[TAM_PLACA];               // Placa del vehículo
+	char colorAuto[10];                  // Color del vehículo
+	int anioAuto;                       // Año del vehículo
+	int revisionesCumplidas;             // Número de revisiones técnicas cumplidas (máx 3)
+};
+
+// Función para validar cédula: debe tener 10 dígitos numéricos
+int validarCedula(char cedula[]) {
+	if (strlen(cedula) != 10) {
+		return 0;
+	}
+	for (int i = 0; i < 10; i++) {
+		if (!isdigit(cedula[i])) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
+// Función para validar nombre (solo letras y espacios)
+int validarNombre(char nombre[]) {
+	for (int i = 0; nombre[i] != '\0'; i++) {
+		if (!isalpha(nombre[i]) && nombre[i] != ' ') {
+			return 0;
+		}
+	}
+	return 1;
+}
+
+// Función para validar placa (3 letras mayúsculas, guion, 4 dígitos)
+int validarPlaca(char placa[]) {
+	if (strlen(placa) != 8) {
+		return 0;
+	}
+	for (int i = 0; i < 3; i++) {
+		if (!isupper(placa[i])) {
+			return 0;
+		}
+	}
+	if (placa[3] != '-') {
+		return 0;
+	}
+	for (int i = 4; i < 8; i++) {
+		if (!isdigit(placa[i])) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
+// Funciones para ingresar datos validando cada dato ingresado
+void pedirCedula(char cedula[]) {
+	do {
+		printf("Ingrese la cédula (10 dígitos): \n");
+		fgets(cedula, TAM_CEDULA, stdin);
+		cedula[strcspn(cedula, "\n")] = '\0'; // quitar salto de línea
+		
+		if (!validarCedula(cedula)) {
+			printf("Cédula inválida, intente de nuevo.\n");
+		}
+	} while (!validarCedula(cedula));
+}
+
+void pedirNombre(char nombre[]) {
+	do {
+		printf("Ingrese el nombre completo: \n");
+		fgets(nombre, TAM_NOMBRE, stdin);
+		nombre[strcspn(nombre, "\n")] = '\0';
+		
+		if (!validarNombre(nombre)) {
+			printf("Nombre inválido, solo letras y espacios. Intente de nuevo.\n");
+		}
+	} while (!validarNombre(nombre));
+}
+
+void pedirPlaca(char placa[]) {
+	do {
+		printf("Ingrese la placa (ej: ABC-1234): \n");
+		fgets(placa, TAM_PLACA, stdin);
+		placa[strcspn(placa, "\n")] = '\0';
+		
+		if (!validarPlaca(placa)) {
+			printf("Placa inválida, intente de nuevo.\n");
+		}
+	} while (!validarPlaca(placa));
+}
+
+// Función para calcular valor a pagar por matrícula
+
+
+// Función para buscar un vehículo por placa en el archivo y devolver sus datos
+// Retorna 1 si encontrado y llena el struct, 0 si no
+int buscarVehiculoPorPlaca(char placaBuscar[], struct datos *vehiculoEncontrado) {
+	FILE *archivo = fopen(ARCHIVO_DATOS, "r");
+	if (!archivo) {
+		printf("No se encontró el archivo %s\n", ARCHIVO_DATOS);
+		return 0;
+	}
+	char linea[256];
+	while (fgets(linea, sizeof(linea), archivo)) {
+		struct datos temp;
+		// Leemos línea y extraemos campos separados por coma
+		char *token = strtok(linea, ",\n");
+		if (!token) continue;
+		strncpy(temp.nombrePropietario, token, TAM_NOMBRE);
+		
+		token = strtok(NULL, ",\n");
+		if (!token) continue;
+		strncpy(temp.numCedula, token, TAM_CEDULA);
+		
+		token = strtok(NULL, ",\n");
+		if (!token) continue;
+		strncpy(temp.modeloAuto, token, sizeof(temp.modeloAuto));
+		
+		token = strtok(NULL, ",\n");
+		if (!token) continue;
+		strncpy(temp.placa, token, TAM_PLACA);
+		
+		token = strtok(NULL, ",\n");
+		if (!token) continue;
+		strncpy(temp.colorAuto, token, sizeof(temp.colorAuto));
+		
+		token = strtok(NULL, ",\n");
+		if (!token) continue;
+		temp.anioAuto = atoi(token);
+		
+		token = strtok(NULL, ",\n");
+		if (!token) temp.revisionesCumplidas = 0;
+		else temp.revisionesCumplidas = atoi(token);
+		
+		// Comparamos placas
+		if (strcmp(temp.placa, placaBuscar) == 0) {
+			*vehiculoEncontrado = temp; // Copiamos datos al struct dado
+			fclose(archivo);
+			return 1;
+		}
+	}
+	fclose(archivo);
+	return 0;
+}
+
+// Función para guardar o actualizar vehículo en el archivo completo
+// Se reescribe el archivo con los registros actualizados
+int actualizarVehiculoEnArchivo(struct datos vehiculoActualizado) {
+	FILE *archivo = fopen(ARCHIVO_DATOS, "r");
+	if (!archivo) {
+		printf("No se encontró el archivo %s\n", ARCHIVO_DATOS);
+		return 0;
+	}
+	struct datos vehiculos[100];
+	int total = 0;
+	char linea[256];
+	
+	// Cargar todos los vehículos a memoria
+	while (fgets(linea, sizeof(linea), archivo)) {
+		struct datos temp;
+		char *token = strtok(linea, ",\n");
+		if (!token) continue;
+		strncpy(temp.nombrePropietario, token, TAM_NOMBRE);
+		token = strtok(NULL, ",\n");
+		if (!token) continue;
+		strncpy(temp.numCedula, token, TAM_CEDULA);
+		token = strtok(NULL, ",\n");
+		if (!token) continue;
+		strncpy(temp.modeloAuto, token, sizeof(temp.modeloAuto));
+		token = strtok(NULL, ",\n");
+		if (!token) continue;
+		strncpy(temp.placa, token, TAM_PLACA);
+		token = strtok(NULL, ",\n");
+		if (!token) continue;
+		strncpy(temp.colorAuto, token, sizeof(temp.colorAuto));
+		token = strtok(NULL, ",\n");
+		if (!token) continue;
+		temp.anioAuto = atoi(token);
+		token = strtok(NULL, ",\n");
+		if (!token) temp.revisionesCumplidas = 0;
+		else temp.revisionesCumplidas = atoi(token);
+		
+		if (strcmp(temp.placa, vehiculoActualizado.placa) == 0) {
+			// Reemplazamos datos de este vehículo por los actualizados
+			temp = vehiculoActualizado;
+		}
+		vehiculos[total++] = temp;
+	}
+	fclose(archivo);
+	
+	// Reescribimos el archivo completo con datos actualizados
+	archivo = fopen(ARCHIVO_DATOS, "w");
+	if (!archivo) {
+		printf("Error al abrir archivo para escritura.\n");
+		return 0;
+	}
+	for (int i = 0; i < total; i++) {
+		fprintf(archivo, "%s,%s,%s,%s,%s,%d,%d\n",
+				vehiculos[i].nombrePropietario,
+				vehiculos[i].numCedula,
+				vehiculos[i].modeloAuto,
+				vehiculos[i].placa,
+				vehiculos[i].colorAuto,
+				vehiculos[i].anioAuto,
+				vehiculos[i].revisionesCumplidas);
+	}
+	fclose(archivo);
+	return 1;
+}
+
+// Función para obtener la fecha y hora actual como una cadena
+void fechaHoraActual(char *buffer, size_t size) {
+	time_t ahora = time(NULL);
+	struct tm *t = localtime(&ahora);
+	strftime(buffer, size, "%Y-%m-%d %H:%M:%S", t);
+}
+
+// Función para agendar cita y generar comprobante impreso y guardado en archivo
+void agendarCita() {
+	struct datos persona;
+	char placaBuscar[TAM_PLACA];
+	printf("Ingrese la placa del vehículo para agendar cita: ");
+	clearInputBuffer();
+	fgets(placaBuscar, TAM_PLACA, stdin);
+	placaBuscar[strcspn(placaBuscar, "\n")] = '\0'; // quitar salto línea
+	
+	if (!buscarVehiculoPorPlaca(placaBuscar, &persona)) {
+		printf("Vehículo no encontrado.\n");
+		return;
+	}
+	
+	if (persona.revisionesCumplidas >= 3) {
+		printf("El vehículo ya tiene 3 revisiones técnicas anuales registradas.\n");
+		return;
+	}
+	
+	persona.revisionesCumplidas++;
+	
+	// Obtener fecha y hora actual con formato
+	char fechaHora[20];
+	fechaHoraActual(fechaHora, sizeof(fechaHora));
+	
+	// Imprimir comprobante en consola
+	printf("\n----- COMPROBANTE DE CITA -----\n");
+	printf("Placa: %s\n", persona.placa);
+	printf("Nombre: %s\n", persona.nombrePropietario);
+	printf("Cédula: %s\n", persona.numCedula);
+	printf("Modelo: %s\n", persona.modeloAuto);
+	printf("Color: %s\n", persona.colorAuto);
+	printf("Año: %d\n", persona.anioAuto);
+	printf("Revisiones cumplidas: %d de 3\n", persona.revisionesCumplidas);
+	printf("Fecha y hora programada para la cita: %s\n", fechaHora);
+	printf("------------------------------\n");
+	
+	// Guardar comprobante en archivo con nombre basado en placa
+	char nombreArchivo[50];
+	snprintf(nombreArchivo, sizeof(nombreArchivo), "%s_cita.txt", persona.placa);
+	FILE* fcomp = fopen(nombreArchivo, "w");
+	if (fcomp == NULL) {
+		printf("Error al crear archivo para guardar comprobante.\n");
+		return;
+	}
+	fprintf(fcomp,
+			"----- COMPROBANTE DE CITA -----\n"
+			"Placa: %s\n"
+			"Nombre: %s\n"
+			"Cédula: %s\n"
+			"Modelo: %s\n"
+			"Color: %s\n"
+			"Año: %d\n"
+			"Revisiones cumplidas: %d de 3\n"
+			"Fecha y hora programada para la cita: %s\n"
+			"------------------------------\n",
+			persona.placa,
+			persona.nombrePropietario,
+			persona.numCedula,
+			persona.modeloAuto,
+			persona.colorAuto,
+			persona.anioAuto,
+			persona.revisionesCumplidas,
+			fechaHora);
+	fclose(fcomp);
+	
+	// Actualizar datos en archivo principal
+	if (actualizarVehiculoEnArchivo(persona))
+		printf("Datos actualizados guardados correctamente.\n");
+	else
+		printf("Error al guardar los datos actualizados.\n");
+}
+float calcularValormatricula(int pagoAtiempo, int hizoevisionVehiculo, int diasPago, float multasVehiculo, int tipoVehiculo) {
+
+	//Datos del recargo y descuentos
+	float recargoRevision = 50.0; //D�lares
+	float recargoMes = 25.0; //D�lares
+	float descuentoProntopago = 0.5; //Porcentaje de descuento (50%)
+	float MatriculaporVehiculo; //Variable de subsecciones para el tipo de veh�culo.
+	
+	//Precio de matr�cula con respecto al tipo de veh�culo 
+	switch (tipoVehiculo){
+		case 1: 
+			MatriculaporVehiculo = 100.0;  //Para auto
+			break;
+		case 2: 
+			MatriculaporVehiculo = 150.0; //Para motocicleta
+			break;
+		case 3: 
+			MatriculaporVehiculo = 250.0; //Para cami�n
+			break;
+		case 4: 
+			MatriculaporVehiculo = 175.0; //Para Bus
+			break;
+		default:
+		    return 0;
+	}
+	
+	// Se suman recargos
+	if (hizoevisionVehiculo == 0) {
+		MatriculaporVehiculo += recargoRevision;
+	}
+	
+	if (pagoAtiempo == 0) {
+		MatriculaporVehiculo += recargoMes;
+	}
+	
+	// Descuento solamente si d�as <= 20
+	if (pagoAtiempo == 1 && diasPago <= 20) {
+		MatriculaporVehiculo *= (1 - descuentoProntopago);   // Para 50% de descuento
+	}
+	
+	// Total a pagar
+	return MatriculaporVehiculo + multasVehiculo;
+	
+}
+
+int main(){
+	
+	//Variables
+	int opcion = 0;
+	char cedulaBusqueda[TAM_CEDULA];
+	datos person;
+	FILE *archivoDatos;
+	int nuevo_Pagomatricula = 1;
+	float totalpagoMatricula; 
+	
+	person.revisionesCumplidas = 0;
+	
+	//Bucle del menú, acabará si el usuario ingresa el número 5
+	while (opcion != 5){
+		
+		menu();
+		
+		printf("¿Qué desea realizar? \n");
+		scanf("%d",&opcion);
+		
+		//Limpiar el terminal
+		system("cls");
+		
+		
+		switch (opcion){
+		case 1: 
+			printf("-----Registro de vehiculos-----\n");
+			
+			archivoDatos = fopen("C:datosVehiculos.txt","a");
+			
+			//Ingreso de Datos y validación
+			clearInputBuffer();				
+			pedirNombre(person.nombrePropietario);
+			pedirCedula(person.numCedula);
+			printf("Ingresar el modelo del vehículo\n");
+			scanf("%s",&person.modeloAuto);
+			clearInputBuffer();      
+			pedirPlaca(person.placa);
+			printf("Ingresar el color del vehículo\n");
+			scanf("%s",&person.colorAuto);
+			printf("Ingresar año del vehículo\n");
+			scanf("%d",&person.anioAuto);
+			clearInputBuffer();
+			
+			//Ingreso de datos en el archivo txt
+			fprintf(archivoDatos,"%s,%s,%s,%s,%s,%d\n",person.nombrePropietario, person.numCedula, person.modeloAuto, person.placa, person.colorAuto, person.anioAuto);
+			fclose(archivoDatos);
+			
+			opcion = continuar();
+			
+			break;
+			
+		case 2:
+			
+			printf("-----Buscar vehículo-----\n");
+			
+			printf("Ingresar el número de cédula del propietario del vehículo que desea buscar\n");
+			pedirCedula(cedulaBusqueda);
+			
+			archivoDatos = fopen("C:\\Users\\nahin\\Documents\\Programacion1\\ProyectoProgramacion1\\Librerias\\datosVehiculos.txt","a");
+			
+			
+			
+			
+			fclose(archivoDatos);
+			opcion = continuar();
+			
+			break;
+			
+			
+			
+		case 3:{
+			
+		    int nuevoPagomatricula = 1;
+				
+			while (nuevoPagomatricula) {
+				int pagoAtiempo, hizoevisionVehiculo, diasPago, tipoVehiculo ;
+				float multasVehiculo, totalpagoMatricula ;
+				
+				printf("Seleccione su tipo de vehículo: \n");
+				printf(" 1. Automóvil \n 2. Motocicleta \n 3. Camión \n 4. Bus \n");
+				scanf("%d", &tipoVehiculo);
+				
+				printf("¿Realizó la revisión técnica? (1=Sí, 0=No): \n");
+				scanf("%d", &hizoevisionVehiculo);
+				
+				printf("¿Pagó la matrícula a tiempo? (1=Sí, 0=No): \n");
+				scanf("%d", &pagoAtiempo);
+				
+				printf("¿Cuántos días han pasado desde la notificación?: \n");
+				scanf("%d", &diasPago);
+				
+				printf("Valor total de multas (sin descuentos): $\n");
+				scanf("%f", &multasVehiculo);
+				
+				//Total a pagar de la matrícula
+				
+				totalpagoMatricula = calcularValormatricula(pagoAtiempo, hizoevisionVehiculo, diasPago, multasVehiculo, tipoVehiculo) ;
+				
+				if (totalpagoMatricula >= 0) {
+					printf("\n--------------- COMPROBANTE DE MATRICULA ---------------\n");
+					printf("Recuerde guardar el comprobante. \n");
+					printf("Multas: $%.2f\n", multasVehiculo);
+					printf("Total a pagar: $%.2f\n", totalpagoMatricula);
+					printf("----------------------------------------------------------\n");
+				}
+					
+					// Desea revisar nuevo pago?
+					
+					printf("\n¿Desea procesar otro pago de matrícula? (1 = Sí, 0 = No): \n");
+					scanf("%d", &nuevoPagomatricula);
+			}
+				
+				printf("Gracias por preferir nuestro sistema. Regrese mas tarde.\n");
+				opcion = continuar();
+			break;
+		}
+		case 4:
+			agendarCita();
+			break;
+		case 5:
+			break;
+		default:
+			printf("Opción no valida\n");
+			break;
+		}
+	}
+	
+	return 0;
+}
+	
